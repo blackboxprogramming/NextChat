@@ -402,6 +402,25 @@ yarn install
 yarn dev
 ```
 
+### Native Stream Lifecycle Tests
+
+With dependencies installed, run the focused suite from the repository root:
+
+```shell
+yarn test:ci --runInBand test/stream.test.ts
+```
+
+These tests need no API key, environment file, provider, or model. They exercise
+the real fetch wrapper with a fake Tauri bridge and Node's Fetch, Web Streams,
+and AbortController implementations.
+
+Native streaming registers its event listener before starting the request.
+Completion, failure, abort, and response-body cancellation release that listener.
+Abort rejects a pending fetch or errors its response body after headers arrive.
+The native command currently exposes no cancellation operation, so an already
+invoked Rust HTTP request may continue after frontend cancellation. These tests
+do not qualify the native binary or its network transport.
+
 ## Deployment
 
 ### Docker (Recommended)
