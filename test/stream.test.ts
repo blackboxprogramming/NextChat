@@ -307,10 +307,13 @@ describe("native streaming fetch lifecycle", () => {
         bridge.response.resolve({ ...metadata, status: 503 });
       };
       const response = await streamFetch("/native");
+      const reading = within(response.text());
+      // Error bodies may arrive after the old 100 ms cutoff.
+      await new Promise<void>((resolve) => setTimeout(resolve, 150));
       bridge.emit({ request_id: 7, chunk: [98, 117, 115, 121] });
       bridge.emit({ request_id: 7, status: 0 });
       assert.equal(response.status, 503);
-      assert.equal(await within(response.text()), "busy");
+      assert.equal(await reading, "busy");
       assert.equal(bridge.unlistens, 1);
     });
   });
